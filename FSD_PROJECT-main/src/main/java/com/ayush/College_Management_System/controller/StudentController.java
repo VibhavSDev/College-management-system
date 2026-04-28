@@ -85,4 +85,12 @@ public class StudentController {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<StudentResponseDTO>> searchStudents(
+            @RequestParam String keyword) {
+
+        log.info("API: Search students with keyword {}", keyword);
+        return ResponseEntity.ok(studentService.searchStudents(keyword));
+    }
 }

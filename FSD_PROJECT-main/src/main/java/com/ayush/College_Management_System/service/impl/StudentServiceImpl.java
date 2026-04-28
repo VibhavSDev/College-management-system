@@ -26,36 +26,36 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentResponseDTO createStudent(StudentRequestDTO dto) {
+
         log.info("Creating student with rollNo: {}", dto.getRollNo());
 
         Department dept = departmentRepo.findById(dto.getDepartmentId())
-                .orElseThrow(() -> {
-                    log.error("Department not found with id: {}", dto.getDepartmentId());
-                    return new ResourceNotFoundException("Department not found");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
         Course course = courseRepo.findById(dto.getCourseId())
-                .orElseThrow(() -> {
-                    log.error("Course not found with id: {}", dto.getCourseId());
-                    return new ResourceNotFoundException("Course not found");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        // ✅ RollNo check
+        studentRepo.findByRollNo(dto.getRollNo()).ifPresent(s -> {
+            throw new IllegalStateException("Roll number already exists");
+        });
+
+        // ✅ Enrollment check
+        if (dto.getEnrollmentNumber() != null && !dto.getEnrollmentNumber().isBlank())  {
+            studentRepo.findByEnrollmentNumber(dto.getEnrollmentNumber()).ifPresent(s -> {
+                throw new IllegalStateException("Enrollment number already exists");
+            });
+        }
 
         Student student = new Student();
         mapToEntity(student, dto);
         student.setDepartment(dept);
         student.setCourse(course);
 
-        if (studentRepo.existsByRollNo(dto.getRollNo())) {
-            throw new IllegalStateException("Roll number already exists");
-        }
-
-        if (dto.getEnrollmentNumber() != null &&
-                studentRepo.existsByEnrollmentNumber(dto.getEnrollmentNumber())) {
-            throw new IllegalStateException("Enrollment number already exists");
-        }
-
         Student saved = studentRepo.save(student);
+
         log.info("Student created successfully with id: {}", saved.getId());
+
         return mapToResponse(saved);
     }
 
@@ -84,13 +84,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentResponseDTO updateStudent(Long id, StudentRequestDTO dto) {
+
         log.info("Updating student with id: {}", id);
 
         Student student = studentRepo.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Student not found with id: {}", id);
-                    return new ResourceNotFoundException("Student not found");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         Department dept = departmentRepo.findById(dto.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
@@ -98,64 +96,93 @@ public class StudentServiceImpl implements StudentService {
         Course course = courseRepo.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
+        // ✅ FIXED RollNo validation
+        studentRepo.findByRollNo(dto.getRollNo()).ifPresent(existing -> {
+            if (!existing.getId().equals(id)) {
+                throw new IllegalStateException("Roll number already exists");
+            }
+        });
+
+        // ✅ FIXED Enrollment validation
+        if (dto.getEnrollmentNumber() != null && !dto.getEnrollmentNumber().isBlank()) {
+            studentRepo.findByEnrollmentNumber(dto.getEnrollmentNumber()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new IllegalStateException("Enrollment number already exists");
+                }
+            });
+        }
+
         mapToEntity(student, dto);
         student.setDepartment(dept);
         student.setCourse(course);
-        if (studentRepo.existsByRollNo(dto.getRollNo())) {
-            throw new IllegalStateException("Roll number already exists");
-        }
 
-        if (dto.getEnrollmentNumber() != null &&
-                studentRepo.existsByEnrollmentNumber(dto.getEnrollmentNumber())) {
-            throw new IllegalStateException("Enrollment number already exists");
-        }
+        Student updated = studentRepo.save(student);
 
         log.info("Student updated successfully with id: {}", id);
-        return mapToResponse(studentRepo.save(student));
+
+        return mapToResponse(updated);
     }
 
     // FIX: Proper PATCH — only update non-null fields
     @Override
     @Transactional
     public StudentResponseDTO patchStudent(Long id, StudentRequestDTO dto) {
+
         log.info("Patching student with id: {}", id);
 
         Student student = studentRepo.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Student not found with id: {}", id);
-                    return new ResourceNotFoundException("Student not found");
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-        // Only update fields that are provided (non-null)
+        // ✅ RollNo validation
+        if (dto.getRollNo() != null) {
+            studentRepo.findByRollNo(dto.getRollNo()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new IllegalStateException("Roll number already exists");
+                }
+            });
+            student.setRollNo(dto.getRollNo());
+        }
+
+        // ✅ Enrollment validation
+        if (dto.getEnrollmentNumber() != null && !dto.getEnrollmentNumber().isBlank()) {
+            studentRepo.findByEnrollmentNumber(dto.getEnrollmentNumber()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new IllegalStateException("Enrollment number already exists");
+                }
+            });
+            student.setEnrollmentNumber(
+                    (dto.getEnrollmentNumber() == null || dto.getEnrollmentNumber().isBlank())
+                            ? null
+                            : dto.getEnrollmentNumber()
+            );
+        }
+
         if (dto.getFirstName() != null) student.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null) student.setLastName(dto.getLastName());
         if (dto.getGender() != null) student.setGender(dto.getGender());
         if (dto.getDob() != null) student.setDob(dto.getDob());
-        if (dto.getRollNo() != null) student.setRollNo(dto.getRollNo());
         if (dto.getEmail() != null) student.setEmail(dto.getEmail());
         if (dto.getPhone() != null) student.setPhone(dto.getPhone());
         if (dto.getCurrentSemester() != null) student.setCurrentSemester(dto.getCurrentSemester());
         if (dto.getAdmissionYear() != null) student.setAdmissionYear(dto.getAdmissionYear());
         if (dto.getStatus() != null) student.setStatus(dto.getStatus());
         if (dto.getAddress() != null) student.setAddress(dto.getAddress());
-        if (dto.getEnrollmentNumber() != null) student.setEnrollmentNumber(dto.getEnrollmentNumber());
         if (dto.getAdmissionType() != null) student.setAdmissionType(dto.getAdmissionType());
         if (dto.getBloodGroup() != null) student.setBloodGroup(dto.getBloodGroup());
         if (dto.getProfileImageUrl() != null) student.setProfileImageUrl(dto.getProfileImageUrl());
 
-        // Update relationships only if IDs are provided
         if (dto.getDepartmentId() != null) {
             Department dept = departmentRepo.findById(dto.getDepartmentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
             student.setDepartment(dept);
         }
+
         if (dto.getCourseId() != null) {
             Course course = courseRepo.findById(dto.getCourseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
             student.setCourse(course);
         }
 
-        log.info("Student patched successfully with id: {}", id);
         return mapToResponse(studentRepo.save(student));
     }
 
@@ -183,7 +210,11 @@ public class StudentServiceImpl implements StudentService {
         student.setAdmissionYear(dto.getAdmissionYear());
         student.setStatus(dto.getStatus());
         student.setAddress(dto.getAddress());
-        student.setEnrollmentNumber(dto.getEnrollmentNumber());
+        student.setEnrollmentNumber(
+                (dto.getEnrollmentNumber() == null || dto.getEnrollmentNumber().isBlank())
+                        ? null
+                        : dto.getEnrollmentNumber()
+        );
         student.setAdmissionType(dto.getAdmissionType());
         student.setBloodGroup(dto.getBloodGroup());
         student.setProfileImageUrl(dto.getProfileImageUrl());
@@ -224,5 +255,16 @@ public class StudentServiceImpl implements StudentService {
         );
 
         return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentResponseDTO> searchStudents(String keyword) {
+        log.info("Searching students with keyword: {}", keyword);
+
+        return studentRepo.searchStudents(keyword)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 }

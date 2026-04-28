@@ -9,6 +9,8 @@ import { StudentRes } from '../../models/response_dto/student-res';
 })
 export class StudentService {
 
+  private baseUrl = 'http://localhost:8080/api/students';
+
   constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
@@ -19,31 +21,50 @@ export class StudentService {
 
   // CREATE
   addStudent(data: StudentReq): Observable<any> {
-    return this.http.post("/api/students", data, { headers: this.getHeaders() });
+    return this.http.post(this.baseUrl, data, { headers: this.getHeaders() });
   }
 
   // READ ALL
   getStudents(): Observable<StudentRes[]> {
-    return this.http.get<StudentRes[]>("/api/students", { headers: this.getHeaders() });
+    return this.http.get<StudentRes[]>(this.baseUrl, { headers: this.getHeaders() });
   }
 
   // READ ONE
   getStudent(id: number | string): Observable<StudentRes> {
-    return this.http.get<StudentRes>(`/api/students/${id}`, { headers: this.getHeaders() });
+    return this.http.get<StudentRes>(`${this.baseUrl}/${id}`, { headers: this.getHeaders() });
   }
 
   // UPDATE (PUT)
   updateStudent(id: number | string, data: StudentReq): Observable<StudentRes> {
-    return this.http.put<StudentRes>(`/api/students/${id}`, data, { headers: this.getHeaders() });
+    return this.http.put<StudentRes>(`${this.baseUrl}/${id}`, data, { headers: this.getHeaders() });
   }
 
   // PATCH
   patchStudent(id: number | string, data: Partial<StudentReq>): Observable<StudentRes> {
-    return this.http.patch<StudentRes>(`/api/students/${id}`, data, { headers: this.getHeaders() });
+    return this.http.patch<StudentRes>(`${this.baseUrl}/${id}`, data, { headers: this.getHeaders() });
   }
 
   // DELETE
   deleteStudent(id: number | string): Observable<any> {
-    return this.http.delete(`/api/students/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.baseUrl}/${id}`, { headers: this.getHeaders() });
   }
+
+  // SEARCH
+  searchStudents(keyword: string): Observable<StudentRes[]> {
+    return this.http.get<StudentRes[]>(`${this.baseUrl}/search?keyword=${encodeURIComponent(keyword)}`, { headers: this.getHeaders() });
+  }
+
+  // 🔽 GET DEPARTMENTS
+getDepartments(): Observable<any[]> {
+  return this.http.get<any[]>('http://localhost:8080/api/departments', {
+    headers: this.getHeaders()
+  });
+}
+
+// 🔽 GET COURSES
+getCourses(): Observable<any[]> {
+  return this.http.get<any[]>('http://localhost:8080/api/courses', {
+    headers: this.getHeaders()
+  });
+}
 }

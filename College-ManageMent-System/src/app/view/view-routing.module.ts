@@ -19,6 +19,7 @@ import { LibraryMemberComponent } from './role/admin/library-member/library-memb
 import { PgStudentComponent } from './role/admin/pg-student/pg-student.component';
 import { ResultsComponent } from './role/admin/results/results.component';
 import { StudentComponent } from './role/admin/student/student.component';
+import { StudentDetailsComponent } from './role/admin/student/student-details.component';
 import { SubjectComponent } from './role/admin/subject/subject.component';
 import { UgprogramComponent } from './role/admin/ugprogram/ugprogram.component';
 
@@ -41,6 +42,7 @@ const routes: Routes = [
   { path: 'library-member', component: LibraryMemberComponent },
   { path: 'pg-student', component: PgStudentComponent },
   { path: 'results', component: ResultsComponent },
+  { path: 'students/:id', component: StudentDetailsComponent },
   { path: 'students', component: StudentComponent },
   { path: 'subject', component: SubjectComponent },
   { path: 'ug-program', component: UgprogramComponent },

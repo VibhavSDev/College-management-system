@@ -130,13 +130,22 @@
         <div class="faculty-header">
             <div>
             <div class="faculty-name">
+<<<<<<< HEAD
                 {{ f.fullName || 'Unknown Faculty' }}
+=======
+                {{ f.fullName || "Unknown Faculty" }}
+>>>>>>> main
                 <span class="badge department-badge">
                 {{ f.departmentName || "No Dept" }}
                 </span>
             </div>
             <div class="faculty-details">
+<<<<<<< HEAD
                 Emp Code: {{ f.employeeCode || 'N/A' }} | {{ f.designation || 'N/A' }}
+=======
+                Emp Code: {{ f.employeeCode || "N/A" }} |
+                {{ f.designation || "N/A" }}
+>>>>>>> main
             </div>
             </div>
 
@@ -153,7 +162,13 @@
             <div><strong>Qual:</strong> {{ f.qualification || "N/A" }}</div>
             </div>
             <div class="data-row full-width">
+<<<<<<< HEAD
             <div><strong>Specialization:</strong> {{ f.specialization || "N/A" }}</div>
+=======
+            <div>
+                <strong>Specialization:</strong> {{ f.specialization || "N/A" }}
+            </div>
+>>>>>>> main
             </div>
             <div class="contact-row">
             <div><strong>Email:</strong> {{ f.email || "N/A" }}</div>
@@ -161,7 +176,14 @@
             </div>
             <div class="meta-row">
             <div><strong>Cabin:</strong> {{ f.cabinNo || "N/A" }}</div>
+<<<<<<< HEAD
             <div><strong>Joined:</strong> {{ (f.dateOfJoining | date:'mediumDate') || "N/A" }}</div>
+=======
+            <div>
+                <strong>Joined:</strong>
+                {{ (f.dateOfJoining | date: "mediumDate") || "N/A" }}
+            </div>
+>>>>>>> main
             </div>
         </div>
         </div>

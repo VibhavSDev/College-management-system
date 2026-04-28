@@ -1,0 +1,92 @@
+<div class="student-details-page">
+  <div class="page-header">
+    <button class="back-btn" (click)="goBack()">← Back to Students</button>
+    <h1>Student Details</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">Loading student details…</div>
+  <div *ngIf="error && !loading" class="error-state">{{ error }}</div>
+
+  <section *ngIf="student && !loading" class="details-wrapper">
+    <div class="summary-card">
+      <div class="summary-top">
+        <div class="avatar-block">
+          <div class="avatar-frame">
+            <img *ngIf="student.profileImageUrl" [src]="student.profileImageUrl" alt="{{ student.firstName }}">
+            <span *ngIf="!student.profileImageUrl" class="avatar-placeholder">
+              {{ student.firstName[0]?.toUpperCase() }}{{ student.lastName?.[0]?.toUpperCase() }}
+            </span>
+          </div>
+          <div class="name-block">
+            <div class="student-name">{{ student.firstName }} {{ student.lastName }}</div>
+            <div class="student-subtitle">Roll No: {{ student.rollNo }}</div>
+          </div>
+        </div>
+
+        <div class="status-block">
+          <span class="status-pill" [ngClass]="student.status.toLowerCase()">{{ student.status }}</span>
+          <div class="quick-metrics">
+            <div>
+              <div class="metric-label">Semester</div>
+              <div class="metric-value">{{ student.currentSemester }}</div>
+            </div>
+            <div>
+              <div class="metric-label">Admission Year</div>
+              <div class="metric-value">{{ student.admissionYear }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-badges">
+        <span class="badge">Department: {{ student.departmentName }}</span>
+        <span class="badge">Course: {{ student.courseName }}</span>
+        <span class="badge">Enrollment: {{ student.enrollmentNumber || 'N/A' }}</span>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <h2>Personal Information</h2>
+        <div class="info-row"><span>Gender</span><span>{{ student.gender || 'N/A' }}</span></div>
+        <div class="info-row"><span>Date of Birth</span><span>{{ student.dob || 'N/A' }}</span></div>
+        <div class="info-row"><span>Blood Group</span><span>{{ student.bloodGroup || 'N/A' }}</span></div>
+      </div>
+
+      <div class="info-card">
+        <h2>Contact Details</h2>
+        <div class="info-row"><span>Email</span><span>{{ student.email || 'N/A' }}</span></div>
+        <div class="info-row"><span>Phone</span><span>{{ student.phone || 'N/A' }}</span></div>
+        <div class="info-row"><span>Address</span><span>{{ student.address || 'N/A' }}</span></div>
+      </div>
+
+      <div class="info-card">
+        <h2>Academic Details</h2>
+        <div class="info-row"><span>Admission Type</span><span>{{ student.admissionType || 'N/A' }}</span></div>
+        <div class="info-row"><span>Status</span><span>{{ student.status || 'N/A' }}</span></div>
+        <div class="info-row"><span>Active</span><span>{{ student.isActive ? 'Yes' : 'No' }}</span></div>
+      </div>
+    </div>
+
+    <div class="extra-panel">
+      <div class="panel-card">
+        <div class="panel-title">Academic Performance</div>
+        <p class="panel-note">Detailed attendance, fees and results views can be added here later.</p>
+        <div class="panel-tile-list">
+          <div class="panel-tile">
+            <span>Attendance</span>
+            <strong>N/A</strong>
+          </div>
+          <div class="panel-tile">
+            <span>Current GPA</span>
+            <strong>N/A</strong>
+          </div>
+          <div class="panel-tile">
+            <span>Advisor</span>
+            <strong>N/A</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

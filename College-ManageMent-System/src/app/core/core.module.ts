@@ -22,7 +22,8 @@ import { NavSidebarComponent } from './components/layout/nav-sidebar/nav-sidebar
   exports: [
     HeaderComponent,
     FooterComponent,
-    LandingComponent
+    LandingComponent,
+    NavSidebarComponent
   ]
 })
 export class CoreModule { }

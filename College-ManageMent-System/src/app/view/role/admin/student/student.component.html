@@ -1,1 +1,261 @@
-<p>student works!</p>
+<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="title-section">
+      <h1>Student Dashboard</h1>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-cards">
+    <div class="card">
+      <h3>Total Students</h3>
+      <p class="count">{{ totalStudents }}</p>
+    </div>
+    <div class="card">
+      <h3>Active Students</h3>
+      <p class="count">{{ activeStudents }}</p>
+    </div>
+    <div class="card">
+      <h3>Graduated</h3>
+      <p class="count">{{ graduatedStudents }}</p>
+    </div>
+    <div class="card">
+      <h3>Dropped</h3>
+      <p class="count">{{ droppedStudents }}</p>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="search-section">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Search students..." 
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange()"
+        class="search-input">
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Department:</label>
+      <select [(ngModel)]="selectedDepartment" (change)="onSearchChange()">
+        <option [ngValue]="null">All Departments</option>
+        <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Course:</label>
+      <select [(ngModel)]="selectedCourse" (change)="onSearchChange()">
+        <option [ngValue]="null">All Courses</option>
+        <option *ngFor="let c of courses" [value]="c.id">{{ c.courseTitle }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="selectedStatus" (change)="onSearchChange()">
+        <option [ngValue]="null">All Statuses</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Semester:</label>
+      <select [(ngModel)]="selectedSemester" (change)="onSearchChange()">
+        <option [ngValue]="null">All Semesters</option>
+        <option *ngFor="let sem of [1,2,3,4,5,6,7,8]" [value]="sem">{{ sem }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STUDENT LIST -->
+  <div class="student-list-section">
+    <div class="list-header">
+      <h3>STUDENT</h3>
+      <h3 class="status-header">STATUS</h3>
+    </div>
+
+    <div class="student-items">
+      <div *ngFor="let student of filteredStudents" class="student-item">
+        <div class="student-info" [routerLink]="['/view/students', student.id]" title="View student details">
+          <div class="student-avatar">
+            <img *ngIf="student.profileImageUrl" [src]="student.profileImageUrl" alt="{{student.firstName}}">
+            <div *ngIf="!student.profileImageUrl" class="avatar-placeholder">
+             {{ student.firstName[0].toUpperCase() }}{{ student.lastName?.[0]?.toUpperCase() }}
+            </div>
+          </div>
+          <div class="student-details">
+            <h4 class="student-name">{{ student.firstName }} {{ student.lastName }}</h4>
+            <p class="student-email">{{ student.email }}</p>
+          </div>
+        </div>
+
+        <div class="student-status">
+          <div [ngClass]="'status-badge ' + (student.status | lowercase)">
+            {{ student.status }}
+          </div>
+          <button class="action-btn view-btn" [routerLink]="['/view/students', student.id]" title="View">
+            View
+          </button>
+          <button class="action-btn edit-btn" (click)="openEditFormModal(student)" title="Edit">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="deleteStudent(student.id)" title="Delete">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="students.length === 0" class="no-data">
+        <p>No students found</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD BUTTON (FLOATING) -->
+  <button class="add-btn" (click)="openFormModal()" title="Add Student">
+    <span class="plus-icon">+</span>
+  </button>
+
+  <!-- FORM MODAL -->
+  <div *ngIf="showFormModal" class="modal-overlay" (click)="closeFormModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Update Student' : 'Add Student' }}</h2>
+        <button class="close-btn" (click)="closeFormModal()">✕</button>
+      </div>
+
+      <form (ngSubmit)="submitForm()" class="modal-form">
+        <div class="form-grid">
+          <!-- REQUIRED -->
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" placeholder="First Name"
+              [(ngModel)]="formData.firstName" name="firstName" required>
+          </div>
+
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Last Name (Optional)"
+              [(ngModel)]="formData.lastName" name="lastName">
+          </div>
+
+          <div class="form-group">
+            <label>Roll No *</label>
+            <input type="text" placeholder="Roll No"
+              [(ngModel)]="formData.rollNo" name="rollNo" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="Email (Optional)"
+              [(ngModel)]="formData.email" name="email">
+          </div>
+
+          <!-- ENUMS -->
+          <div class="form-group">
+            <label>Gender *</label>
+            <select [(ngModel)]="formData.gender" name="gender" required>
+              <option [ngValue]="null">Select Gender</option>
+              <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Status *</label>
+            <select [(ngModel)]="formData.status" name="status" required>
+              <option [ngValue]="null">Select Status</option>
+              <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Admission Type</label>
+            <select [(ngModel)]="formData.admissionType" name="admissionType">
+              <option [ngValue]="null">Admission Type (Optional)</option>
+              <option *ngFor="let a of admissionTypes" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Blood Group</label>
+            <select [(ngModel)]="formData.bloodGroup" name="bloodGroup">
+              <option [ngValue]="null">Blood Group (Optional)</option>
+              <option *ngFor="let b of bloodGroups" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+
+          <!-- NUMBERS -->
+          <div class="form-group">
+            <label>Semester *</label>
+            <input type="number" placeholder="Semester"
+              [(ngModel)]="formData.currentSemester" name="currentSemester" required>
+          </div>
+
+          <div class="form-group">
+            <label>Admission Year *</label>
+            <input type="number" placeholder="Admission Year"
+              [(ngModel)]="formData.admissionYear" name="admissionYear" required>
+          </div>
+
+          <!-- OPTIONAL -->
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" placeholder="Phone (Optional)"
+              [(ngModel)]="formData.phone" name="phone">
+          </div>
+
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" placeholder="Address (Optional)"
+              [(ngModel)]="formData.address" name="address">
+          </div>
+
+          <div class="form-group">
+            <label>Enrollment No</label>
+            <input type="text" placeholder="Enrollment No (Optional)"
+              [(ngModel)]="formData.enrollmentNumber" name="enrollmentNumber">
+          </div>
+
+          <!-- RELATIONS -->
+          <div class="form-group">
+            <label>Department *</label>
+            <select [(ngModel)]="formData.departmentId" name="departmentId" required>
+              <option [ngValue]="null">Select Department</option>
+              <option *ngFor="let d of departments" [value]="d.id">
+                {{ d.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Course *</label>
+            <select [(ngModel)]="formData.courseId" name="courseId" required>
+              <option [ngValue]="null">Select Course</option>
+              <option *ngFor="let c of courses" [value]="c.id">
+                {{ c.courseTitle }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"
+            [disabled]="!formData.firstName || !formData.rollNo || !formData.departmentId || !formData.courseId">
+            {{ isEditMode ? 'Update' : 'Create' }}
+          </button>
+
+          <button type="button" class="btn btn-secondary" (click)="closeFormModal()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
